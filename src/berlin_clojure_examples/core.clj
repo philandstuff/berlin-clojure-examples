@@ -1,6 +1,7 @@
 (ns berlin-clojure-examples.core
   (:use [overtone.grid.launchpad]
-        [overtone.polynome])
+        [overtone.polynome]
+        [overtone.live])
   (:require [berlin-clojure-examples.sequencer :as sequencer]
             [berlin-clojure-examples.piano :as piano]
             [berlin-clojure-examples.satie :as satie]
@@ -13,9 +14,9 @@
 
 (comment
   (remove-all-callbacks poly)
-  (satie/init-polynome poly)
-  (sequencer/init-polynome-normal poly)
   (piano/init-polynome (init lp))
+  (satie/init-polynome (init lp))
+  (sequencer/init-polynome-normal (init lp))
   )
 
 (comment
@@ -28,4 +29,5 @@
 
 (comment
   (keyboard/init-polynome-keyboard (init lp))
+  (stop)
   )

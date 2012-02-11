@@ -5,6 +5,10 @@
   (:require [berlin-clojure-examples.sequencer :as sequencer]
 ))
 
+(definst crappy-square-wave [freq 440]
+  (let [wub (lin-exp (lf-saw 4) -1 1 40 5000)]
+    (lpf (square freq) wub)))
+
 (defn init-polynome-keyboard [poly]
   (remove-all-callbacks poly)
   (let [inst-activation (atom {})]
@@ -15,7 +19,7 @@
                                            [note]   (degrees->pitches [degree] :minor :a0)
                                            octave-offset (* 12 (- 7 y))]
                                        (swap! inst-activation
-                                              assoc [x y] (sequencer/bass (midi->hz (+ octave-offset note))))))))
+                                              assoc [x y] (crappy-square-wave (midi->hz (+ octave-offset note))))))))
     (on-release poly "bar" (fn [x y s]
                              (match [x y]
                                     [_ 7] nil

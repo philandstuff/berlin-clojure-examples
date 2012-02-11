@@ -5,6 +5,7 @@
         [overtone.live]
         [overtone.inst sampled-piano]))
 
+;; Based on Sam Aaron's work for monome: https://gist.github.com/1377020
 ;;Erik Satie Gnossienne No. 1
 (def phrase1a [:v :vii :vi# :v :v :iv# :v :iv#])
 (def phrase1b [:v :vii :vi# :v :vii# :i+ :vii# :i+])
@@ -96,8 +97,6 @@
         (sampled-piano p (vol-mul vol)))
       (sampled-piano pitch (vol-mul vol)))))
 
-(def m (init (make-launchpad [:off :red :green :yellow])))
-
 (defn matching-notes
   "Find the matching sample in piano-samples which matches the midi note.
   Assumes the name of the sample contains a string repressntation of the midi
@@ -115,8 +114,8 @@
 
 (defn init-polynome [poly]
   (remove-all-callbacks poly)
-  (light-led-on-sustain m)
-  (on-press m "foo" (fn [x y s]
+  (light-led-on-sustain poly)
+  (on-press poly "foo" (fn [x y s]
                       (match [x y]
                              [_ 0] (play-next-lh (+ (rand-int 5) (* 12 (+ x 4))))
                              [_ 7] (play-next-rh (+ (rand-int 5) (* 12 (+ x 4))))

@@ -32,14 +32,6 @@
         env (env-gen (perc 0.001 0.3) :action FREE)]
     (* 2 src env)))
 
-(def bass1 (bass 50 0))
-
-(def bass2 (bass 75 0))
-
-(def bass3 (bass (* 4/3 50) 0))
-
-(def bass4 (bass 100 0))
-
 (def metro (metronome 500))
 
 (comment
@@ -47,7 +39,9 @@
   (metro :bpm 400)
   )
 
-(defn sequencer [beat m]
+(def wat (load-sample "~/Downloads/watf.wav"))
+
+(defn sequencer [beat m bass1 bass2 bass3 bass4]
   (at (metro beat)
       (let [mod-beat (mod beat 8)]
         (when-not (zero? (led-activation m mod-beat 0))
@@ -68,12 +62,12 @@
           (ctl bass3 :volume 1)
           (ctl bass3 :volume 0))
         (when-not (zero? (led-activation m mod-beat 6))
-          (beep (* 6/5 1000)))
+          (mono-player wat))
         (if-not (zero? (led-activation m mod-beat 7))
           (ctl bass4 :volume 1)
           (ctl bass4 :volume 0))))
   
-  (apply-at (metro (inc beat)) #'sequencer (inc beat) [m]))
+  (apply-at (metro (inc beat)) #'sequencer (inc beat) [m bass1 bass2 bass3 bass4]))
 
 (def bass-sequencer-insts
   (atom nil))
@@ -110,7 +104,7 @@
   (remove-all-callbacks m)
   (on-press m "foo" (fn [x y s]
                       (toggle-led m x y)))
-  (sequencer (metro) m)
+  (sequencer (metro) m (bass 50 0) (bass 75 0) (bass (* 4/3 50) 0) (bass 100 0))
   )
 
 (defn init-polynome-bass [poly]
