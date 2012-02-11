@@ -82,22 +82,9 @@
   [vol]
   (* vol 0.002))
 
-(defn play-next-rh
-  [vol]
-  (let [idx (swap! cur-pitch-rh inc)
-        pitch (nth (cycle rh-pitches) idx)]
-    (sampled-piano pitch (vol-mul vol))))
-
-(defn play-next-lh
-  [vol]
-  (let [idx (swap! cur-pitch-lh inc)
-        pitch (nth (cycle lh-pitches) idx)]
-    (if (sequential? pitch)
-      (doseq [p pitch]
-        (sampled-piano p (vol-mul vol)))
-      (sampled-piano pitch (vol-mul vol)))))
-
-(defn matching-notes
+;; copied from overtone.inst.sampled-piano because it's a private
+;; function O_o
+(defn my-matching-notes
   "Find the matching sample in piano-samples which matches the midi note.
   Assumes the name of the sample contains a string repressntation of the midi
   note i.e. C4."
@@ -105,6 +92,30 @@
   (filter #(if-let [n (match-note (:name %))]
              (= note (:midi-note n)))
           piano-samples))
+
+(definst wob-sam-stereo [buf 0 vol 1.0 wub-freq 0.0]
+  (let [wub   (lin-exp (lf-saw wub-freq 1.9) -1 1 40 5000)
+        wub   (select (not-pos? wub-freq) [wub 5000])
+        sound (scaled-play-buf 2 buf 1.0 1 0.0 false FREE)]
+    (* vol (lpf sound wub))))
+
+(defn piano [note vol wub-freq]
+  (wob-sam-stereo (first (my-matching-notes note)) vol wub-freq))
+
+(defn play-next-rh
+  [wobble]
+  (let [idx (swap! cur-pitch-rh inc)
+        pitch (nth (cycle rh-pitches) idx)]
+    (piano pitch 1 wobble)))
+
+(defn play-next-lh
+  [wobble]
+  (let [idx (swap! cur-pitch-lh inc)
+        pitch (nth (cycle lh-pitches) idx)]
+    (if (sequential? pitch)
+      (doseq [p pitch]
+        (piano p 1 wobble))
+      (piano pitch 1 wobble))))
 
 (defn pitch-from-coords [x y]
   (let [octave [:i :ii :iii :iv :v :vi :vii :i+]
@@ -117,8 +128,8 @@
   (light-led-on-sustain poly)
   (on-press poly "foo" (fn [x y s]
                       (match [x y]
-                             [_ 0] (play-next-lh (+ (rand-int 5) (* 12 (+ x 4))))
-                             [_ 7] (play-next-rh (+ (rand-int 5) (* 12 (+ x 4))))
+                             [_ 0] (play-next-lh x)
+                             [_ 7] (play-next-rh x)
                              [7 _] (reset-pos))))
   )
 
